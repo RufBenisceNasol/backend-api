@@ -22,15 +22,37 @@ const sendVerificationEmail = async (email, verificationLink) => {
     try {
         await transporter.sendMail({
             to: email,
-            subject: 'Email Verification',
-            html: `<p>Please verify your email by clicking on the link: <a href="${verificationLink}">Verify Email</a></p>`,
+            subject: 'Verify Your Email - Bufood 🍽️',
+            html: `
+                <div style="font-family: Arial, sans-serif; background-color: #f9f9f9; padding: 20px;">
+                    <div style="max-width: 600px; margin: auto; background-color: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);">
+                        <h2 style="color: #333;">Welcome to <span style="color: #28a745;">Bufood</span>! 👋</h2>
+                        <p style="font-size: 16px; color: #555;">
+                            Thanks for signing up! Please verify your email address by clicking the button below:
+                        </p>
+                        <a href="${verificationLink}"
+                           style="display: inline-block; padding: 12px 24px; margin: 20px 0;
+                                  background-color: #28a745; color: #fff; text-decoration: none;
+                                  border-radius: 6px; font-weight: bold; font-size: 16px;">
+                            Verify Email
+                        </a>
+                        <p style="font-size: 14px; color: #777;">
+                            If you did not create this account, you can safely ignore this email.
+                        </p>
+                        <p style="font-size: 14px; color: #aaa; margin-top: 30px;">
+                            &mdash; The Bufood Team
+                        </p>
+                    </div>
+                </div>
+            `,
         });
         console.log('Verification email sent successfully');
     } catch (error) {
-        console.error('Error sending verification email:', error.message); // Log the error message
+        console.error('Error sending verification email:', error.message);
         throw new Error('Could not send verification email');
     }
 };
+
 
 // Register a new user
 const register = async (req, res) => {
