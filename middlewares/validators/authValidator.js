@@ -17,7 +17,7 @@ const registerValidation = [
 
     body('role')
         .optional()
-        .isIn(['Customer', 'Admin']).withMessage('Invalid role'),
+        .isIn(['Customer', 'Seller']).withMessage('Invalid role'),
 ];
 
 const loginValidation = [
