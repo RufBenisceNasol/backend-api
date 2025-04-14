@@ -1,22 +1,25 @@
 {
   "name": "backend-api",
   "version": "1.0.0",
+  "description": "Bufood backend API",
+  "author": "RufBenisceNasol",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "nodemon server.js"
+    "start": "node --no-warnings server.js",
+    "dev": "nodemon --no-warnings server.js"
   },
-  "keywords": [],
-  "author": "",
   "license": "ISC",
-  "description": "",
+  "keywords": [],
   "dependencies": {
     "bcryptjs": "^3.0.2",
+    "cloudinary": "^1.41.3",
     "dotenv": "^16.5.0",
     "express": "^4.21.2",
     "express-validator": "^7.2.1",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.13.2",
+    "multer": "^1.4.5-lts.2",
+    "multer-storage-cloudinary": "^4.0.0",
     "nodemailer": "^6.10.1"
   },
   "devDependencies": {
