@@ -1,26 +1,53 @@
 const { body } = require('express-validator');
 
-const productValidation = [
+const createProductValidation = [
   body('name')
-    .notEmpty().withMessage('Product name is required')
-    .isLength({ min: 2 }).withMessage('Product name must be at least 2 characters'),
+    .trim()
+    .notEmpty().withMessage('Product name is required'),
 
   body('description')
-    .optional()
-    .isString().withMessage('Description must be a string'),
+    .trim()
+    .notEmpty().withMessage('Description is required'),
 
   body('price')
     .notEmpty().withMessage('Price is required')
-    .isFloat({ min: 0 }).withMessage('Price must be a positive number'),
+    .isFloat({ gt: 0 }).withMessage('Price must be a number greater than 0'),
 
   body('category')
+    .trim()
     .notEmpty().withMessage('Category is required'),
 
-    body('availability')
+  body('availability')
     .optional()
-    .customSanitizer(value => value.toLowerCase())
-    .isIn(['available', 'out of stock'])
-    .withMessage('Availability must be either "Available" or "Out of Stock"'),
+    .isIn(['Available', 'Out of Stock']).withMessage('Availability must be "Available" or "Out of Stock"'),
 ];
 
-module.exports = productValidation;
+const updateProductValidation = [
+  body('name')
+    .optional()
+    .trim()
+    .notEmpty().withMessage('Product name cannot be empty'),
+
+  body('description')
+    .optional()
+    .trim()
+    .notEmpty().withMessage('Description cannot be empty'),
+
+  body('price')
+    .optional()
+    .isFloat({ gt: 0 }).withMessage('Price must be a number greater than 0'),
+
+  body('category')
+    .optional()
+    .trim()
+    .notEmpty().withMessage('Category cannot be empty'),
+
+  body('availability')
+    .optional()
+    .isIn(['Available', 'Out of Stock']).withMessage('Availability must be "Available" or "Out of Stock"'),
+];
+
+module.exports = {
+  createProductValidation,
+  updateProductValidation
+};

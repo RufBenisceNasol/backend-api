@@ -1,3 +1,4 @@
+// middlewares/authMiddleware.js
 const jwt = require('jsonwebtoken');
 const User = require('../models/userModel');
 
@@ -25,4 +26,22 @@ const authenticate = async (req, res, next) => {
   }
 };
 
-module.exports = authenticate;
+const checkRole = (requiredRole) => {
+  return (req, res, next) => {
+    if (
+      typeof requiredRole !== 'string' ||
+      typeof req.user.role !== 'string' ||
+      req.user.role.toLowerCase() !== requiredRole.toLowerCase()
+    ) {
+      return res.status(403).json({ message: 'Access denied. Insufficient role.' });
+    }
+
+    next();
+  };
+};
+
+// ✅ Export both
+module.exports = {
+  authenticate,
+  checkRole,
+};

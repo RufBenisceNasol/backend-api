@@ -3,36 +3,50 @@ const router = express.Router();
 
 const {
   createProduct,
-  getSellerProducts,
+  getAllProducts,
+  getProductById,
   updateProduct,
-  deleteProduct,
+  deleteProduct
 } = require('../controllers/productController');
 
-const authenticate = require('../middlewares/authMiddleware');
-const checkSeller = require('../middlewares/roleMiddleware');
-const upload = require('../utils/multerStorage'); // Multer config for Cloudinary
-const productValidation = require('../middlewares/validators/productValidation');
+const { authenticate, checkRole } = require('../middlewares/authMiddleware');
+const upload = require('../middlewares/uploadMiddleware');
 const handleValidation = require('../middlewares/validators/handleValidation');
+const {
+  createProductValidation,
+  updateProductValidation
+} = require('../middlewares/validators/productValidation');
 
-// Apply auth + seller check for all routes below
-router.use(authenticate, checkSeller);
+// 🟢 Public routes
+router.get('/', getAllProducts);
+router.get('/:id', getProductById);
 
-// 🆕 Create a product (with image upload)
+// 🔐 Seller-only routes
 router.post(
   '/',
-  upload.single('image'),           // Handles file upload from 'image' field
-  productValidation,                // Express-validator checks
-  handleValidation,                 // Sends error if validation fails
-  createProduct                     // Controller
+  authenticate,
+  checkRole('Seller'),
+  upload.single('image'),
+  createProductValidation,
+  handleValidation,
+  createProduct
 );
 
-// 📦 Get all seller products
-router.get('/', getSellerProducts);
+router.put(
+  '/:id',
+  authenticate,
+  checkRole('Seller'),
+  upload.single('image'),
+  updateProductValidation,
+  handleValidation,
+  updateProduct
+);
 
-// ✏️ Update product by ID
-router.put('/:id', updateProduct);
-
-// ❌ Delete product by ID
-router.delete('/:id', deleteProduct);
+router.delete(
+  '/:id',
+  authenticate,
+  checkRole('Seller'),
+  deleteProduct
+);
 
 module.exports = router;

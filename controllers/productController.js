@@ -1,128 +1,150 @@
 const Product = require('../models/productModel');
 const Store = require('../models/storeModel');
-const uploadToCloudinary = require('../utils/cloudinary'); // make sure this is imported correctly
+const uploadToCloudinary = require('../utils/cloudinary');
+const fs = require('fs');
 
-// CREATE product
 const createProduct = async (req, res) => {
-    try {
-      // Trimmed inputs
-      const name = req.body.name?.trim();
-      const description = req.body.description?.trim();
-      const category = req.body.category?.trim();
-      const price = req.body.price;
-      const availability = req.body.availability;
-  
-      // Check if seller has a store
-      const store = await Store.findOne({ owner: req.user._id });
-      if (!store) {
-        return res.status(400).json({ error: 'Seller does not have a store' });
-      }
-  
-      // Image handling with default fallback
-      const imageUrl =
-        req.file?.path ||
-        'https://res.cloudinary.com/dflcnd7z3/image/upload/v1744609432/zqmqydo1eeiup3qvv1vh.jpg';
-  
-      // Normalize availability
-      const normalizedAvailability =
-        availability?.trim().toLowerCase() === 'out of stock' ? 'Out of Stock' : 'Available';
-  
-      // Create product
-      const product = new Product({
-        name,
-        description,
-        price,
-        category,
-        availability: normalizedAvailability,
-        storeId: store._id,
-        image: imageUrl,
-        sellerId: req.user._id,
-      });
-  
-      await product.save();
-      res.status(201).json(product);
-    } catch (err) {
-      console.error('Create Product Error:', err);
-      res.status(500).json({ error: 'Failed to create product', details: err.message });
-    }
-  };
-  
-  // READ all products for seller
-  const getSellerProducts = async (req, res) => {
-    try {
-      const products = await Product.find({ sellerId: req.user._id }).sort({ createdAt: -1 });
-      res.status(200).json(products);
-    } catch (err) {
-      res.status(500).json({ error: 'Failed to fetch products', details: err.message });
-    }
-  };
-  
-  // UPDATE product
-  const updateProduct = async (req, res) => {
-    try {
-      const { id } = req.params;
-      const updates = {
-        ...req.body,
-        name: req.body.name?.trim(),
-        description: req.body.description?.trim(),
-        category: req.body.category?.trim(),
-      };
-  
-      // Normalize availability if provided
-      if (updates.availability && typeof updates.availability === 'string') {
-        const normalized = updates.availability.trim().toLowerCase();
-        if (normalized === 'available') {
-          updates.availability = 'Available';
-        } else if (normalized === 'out of stock') {
-          updates.availability = 'Out of Stock';
-        } else {
-          delete updates.availability; // invalid, remove
+  try {
+    const { name, description, price, category, availability } = req.body;
+    const sellerId = req.user._id;
+
+    const store = await Store.findOne({ owner: sellerId });
+    if (!store) return res.status(404).json({ message: 'Store not found' });
+
+    let imageUrl = undefined;
+    if (req.file) {
+      const result = await uploadToCloudinary(req.file.path, 'products');
+      imageUrl = result.secure_url;
+      
+      // Delete the file after upload
+      fs.unlink(req.file.path, (err) => {
+        if (err) {
+          console.error('Error deleting the file from local storage:', err);
         }
-      }
-  
-      // Optional: Handle updated image
-      if (req.file) {
-        updates.image = req.file.path;
-      }
-  
-      const product = await Product.findOneAndUpdate(
-        { _id: id, sellerId: req.user._id },
-        updates,
-        { new: true }
-      );
-  
-      if (!product) {
-        return res.status(404).json({ error: 'Product not found or unauthorized' });
-      }
-  
-      res.status(200).json(product);
-    } catch (err) {
-      console.error('Update Product Error:', err);
-      res.status(500).json({ error: 'Failed to update product', details: err.message });
+      });
     }
-  };
-  
-  // DELETE product
-  const deleteProduct = async (req, res) => {
-    try {
-      const { id } = req.params;
-  
-      const product = await Product.findOneAndDelete({ _id: id, sellerId: req.user._id });
-  
-      if (!product) {
-        return res.status(404).json({ error: 'Product not found or unauthorized' });
-      }
-  
-      res.status(200).json({ message: 'Product deleted successfully' });
-    } catch (err) {
-      console.error('Delete Product Error:', err);
-      res.status(500).json({ error: 'Failed to delete product', details: err.message });
+
+    const newProduct = new Product({
+      name,
+      description,
+      price,
+      category,
+      availability,
+      sellerId,
+      storeId: store._id,
+      image: imageUrl,
+    });
+
+    const savedProduct = await newProduct.save();
+    store.products.push(savedProduct._id);
+    await store.save();
+
+    res.status(201).json(savedProduct);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+const getSellerProducts = async (req, res) => {
+  try {
+    const sellerId = req.user._id;
+    const products = await Product.find({ sellerId })
+      .populate('storeId', 'storeName')
+      .populate('sellerId', 'name email');
+
+    res.status(200).json(products);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Failed to fetch seller products' });
+  }
+};
+
+const getAllProducts = async (req, res) => {
+  try {
+    const products = await Product.find()
+      .populate('storeId', 'storeName')
+      .populate('sellerId', 'name email');
+    res.json(products);
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+const getProductById = async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id)
+      .populate('storeId', 'storeName')
+      .populate('sellerId', 'name email');
+    if (!product) return res.status(404).json({ message: 'Product not found' });
+    res.json(product);
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+const updateProduct = async (req, res) => {
+  try {
+    // Find the product by ID
+    const product = await Product.findById(req.params.id);
+    if (!product) return res.status(404).json({ message: 'Product not found' });
+
+    // Check if the logged-in user is the seller
+    if (product.sellerId.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: 'Unauthorized' });
     }
-  };
-  
-  module.exports = {
-    createProduct,
-    getSellerProducts,
-    updateProduct,
-    deleteProduct,
-  };
+
+    // Only update the image if it's provided
+    if (req.file) {
+      const result = await uploadToCloudinary(req.file.path, 'products');
+      req.body.image = result.secure_url;  // Set the new image URL in the request body
+      
+      // Delete the file after upload
+      fs.unlink(req.file.path, (err) => {
+        if (err) {
+          console.error('Error deleting the file from local storage:', err);
+        }
+      });
+    }
+
+    // Apply the updates (only image will be updated if passed)
+    Object.assign(product, req.body);  // Apply the changes to the product
+
+    // Save the updated product
+    const updatedProduct = await product.save();
+    res.json(updatedProduct);  // Return the updated product
+  } catch (err) {
+    console.error(err);  // Log the error
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+const deleteProduct = async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id);
+    if (!product) return res.status(404).json({ message: 'Product not found' });
+
+    if (product.sellerId.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: 'Unauthorized' });
+    }
+
+    await Product.findByIdAndDelete(req.params.id);
+
+    await Store.findByIdAndUpdate(product.storeId, {
+      $pull: { products: product._id },
+    });
+
+    res.json({ message: 'Product deleted successfully' });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+module.exports = {
+  createProduct,
+  getSellerProducts,
+  getAllProducts,
+  getProductById,
+  updateProduct,
+  deleteProduct
+};

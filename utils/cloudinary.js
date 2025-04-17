@@ -6,4 +6,11 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-module.exports = cloudinary;
+// Function to upload image to Cloudinary
+const uploadToCloudinary = (filePath, folder) => {
+  return cloudinary.uploader.upload(filePath, {
+    folder: folder,
+  });
+};
+
+module.exports = uploadToCloudinary;

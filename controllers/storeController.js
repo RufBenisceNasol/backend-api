@@ -85,11 +85,35 @@ const getStoreById = async (req, res) => {
   }
 };
 
+// 🔥 NEW: Get products by store ID (for customers)
+const getStoreProducts = async (req, res) => {
+  const storeId = req.params.id; // Get store ID from request parameters
+
+  try {
+    // Fetch the store by its ID and populate the products field
+    const store = await Store.findById(storeId).populate('products');
+    
+    if (!store) {
+      return res.status(404).json({ message: 'Store not found' });
+    }
+
+    // If the store exists, return the products array
+    res.status(200).json({
+      storeId: store._id,
+      storeName: store.storeName,
+      products: store.products,
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to fetch products for the store', error: error.message });
+  }
+};
+
 module.exports = {
   createStoreForSeller,
   updateStore,
   deleteStore,
   getStoreByOwner,
   getAllStores,
-  getStoreById
+  getStoreById, 
+  getStoreProducts
 };
