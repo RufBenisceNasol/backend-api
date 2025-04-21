@@ -46,12 +46,16 @@ app.use((err, req, res, next) => {
 });
 
 // Graceful shutdown
-process.on('SIGINT', () => {
+process.on('SIGINT', async () => {
     console.log('SIGINT received, shutting down gracefully...');
-    mongoose.connection.close(() => {
+    try {
+        await mongoose.connection.close();
         console.log('MongoDB connection closed.');
         process.exit(0);
-    });
+    } catch (err) {
+        console.error('Error closing MongoDB connection:', err);
+        process.exit(1);
+    }
 });
 
 // Start the server

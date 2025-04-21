@@ -7,28 +7,40 @@ const createStoreForSeller = async (user) => {
   const newStore = new Store({
     storeName,
     owner: user._id,
-    products: []
+    products: [],
+    image: 'https://res.cloudinary.com/dflcnd7z3/image/upload/v1743873916/store-images/defaultStore.png',
   });
 
   await newStore.save();
   return newStore;
 };
 
-// Update store details
 const updateStore = async (req, res) => {
   const storeId = req.params.id;
-  const updates = req.body;
+  const updates = {};
+
+  if (req.body.storeName) {
+    updates.storeName = req.body.storeName;
+  }
+
+  if (req.file) {
+    updates.image = req.file.path;
+  }
 
   try {
     const updatedStore = await Store.findByIdAndUpdate(storeId, updates, { new: true });
+
     if (!updatedStore) {
       return res.status(404).json({ message: 'Store not found' });
     }
+
     res.status(200).json(updatedStore);
   } catch (error) {
     res.status(500).json({ message: 'Failed to update store', error: error.message });
   }
 };
+
+
 
 // Delete store
 const deleteStore = async (req, res) => {

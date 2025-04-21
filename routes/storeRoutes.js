@@ -12,7 +12,7 @@ const {
 
 const { authenticate } = require('../middlewares/authMiddleware'); // ✅ FIXED
 const checkStoreOwnership = require('../utils/checkOwnership');
-const validateStore = require('../middlewares/validators/storeValidator');
+const uploadStoreImage = require('../middlewares/uploadMiddleware'); 
 
 // 🔍 Get all stores (with optional search)
 router.get('/', getAllStores);
@@ -24,7 +24,7 @@ router.get('/owner/:ownerId', authenticate, getStoreByOwner);
 router.get('/:id', getStoreById);
 
 // ✏️ Update store - only by owner with validation
-router.put('/:id', authenticate, checkStoreOwnership, validateStore, updateStore);
+router.put('/:id', authenticate, checkStoreOwnership, uploadStoreImage.single('image'),updateStore);
 
 // ❌ Delete store - only by owner
 router.delete('/:id', authenticate, checkStoreOwnership, deleteStore);
