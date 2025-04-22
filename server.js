@@ -6,6 +6,7 @@ const productRoutes = require('./routes/productRoutes');
 const customerRoutes = require('./routes/customerRoutes');
 const sellerRoutes = require('./routes/sellerRoutes');
 const cartRoutes = require('./routes/cartRoutes');
+const orderRoutes = require('./routes/orderRoutes');  // Import the new order routes
 const dotenv = require('dotenv');
 const morgan = require('morgan');
 const helmet = require('helmet');
@@ -38,6 +39,7 @@ app.use('/api/products', productRoutes);
 app.use('/api/customers', customerRoutes);
 app.use('/api/seller', sellerRoutes);
 app.use('/api/cart', cartRoutes);
+app.use('/api/orders', orderRoutes);  // Add the order routes
 
 // Error handling middleware
 app.use((err, req, res, next) => {

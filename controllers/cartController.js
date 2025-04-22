@@ -1,5 +1,8 @@
 const Cart = require('../models/cartModel');
 const Product = require('../models/productModel');
+const Order = require('../models/orderModel');
+const OrderItem = require('../models/orderItemModel'); // Your OrderItem model
+
 
 // Add product to cart
 const addToCart = async (req, res) => {
@@ -164,10 +167,16 @@ const getCartSummary = async (req, res) => {
 
 
 
+
+
+
+
+
+
 module.exports = {
-    addToCart,
-    viewCart,
-    removeItemFromCart,
-    clearCart,
-    updateCartItem, // Add this line
-  };
+  addToCart,
+  viewCart,
+  removeItemFromCart,
+  clearCart,
+  updateCartItem, // Correctly export the checkout function
+};

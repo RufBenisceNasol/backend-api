@@ -12,7 +12,7 @@ const {
 
 const { authenticate } = require('../middlewares/authMiddleware'); // ✅ FIXED
 const checkStoreOwnership = require('../utils/checkOwnership');
-const uploadStoreImage = require('../middlewares/uploadMiddleware'); 
+const uploadStoreImage = require('../middlewares/uploadStoreMiddleware'); 
 
 // 🔍 Get all stores (with optional search)
 router.get('/', getAllStores);

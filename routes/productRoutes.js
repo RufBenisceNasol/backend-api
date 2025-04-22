@@ -11,7 +11,7 @@ const {
 } = require('../controllers/productController');
 
 const { authenticate, checkRole } = require('../middlewares/authMiddleware');
-const uploadProductImage = require('../utils/uploadProductImage'); // ✅ Updated middleware for product images
+const uploadProductImage = require('../middlewares/uploadProductImage'); 
 const handleValidation = require('../middlewares/validators/handleValidation');
 const checkProductOwnership = require('../utils/checkProductOwnership');
 const {
