@@ -6,8 +6,10 @@ const {
   placeOrder,
   getOrdersForCustomer,
   getOrderDetails,
-  cancelOrderBySeller,
-  cancelOrderByCustomer
+  cancelOrderByCustomer,
+  getPlacedOrdersForSeller, 
+  updateOrderStatusOrCancelBySeller,
+  
 } = require('../controllers/orderController');
 const { authenticate, checkRole } = require('../middlewares/authMiddleware');
 
@@ -23,14 +25,17 @@ router.post('/place-order/:orderId', authenticate, checkRole('Customer'), placeO
 // ✅ Get all orders for a customer
 router.get('/customer', authenticate, getOrdersForCustomer);
 
+// ✅ Get all placed orders for a seller
+router.get('/seller/placed', authenticate, checkRole('Seller'), getPlacedOrdersForSeller); // ✅ New route
+
 // ✅ Get order details by orderId
 router.get('/:orderId', authenticate, getOrderDetails);
 
-// ✅ Seller cancels order
-router.patch('/cancel-by-seller/:orderId', authenticate, checkRole('Seller'), cancelOrderBySeller);
-
 // ✅ Customer's cancellation request
 router.patch('/cancel-by-customer/:orderId', authenticate, checkRole('Customer'), cancelOrderByCustomer);
+
+// ✅ Seller updates order status or cancels order
+router.patch('/seller/manage/:orderId', authenticate, checkRole('Seller'), updateOrderStatusOrCancelBySeller);
 
 
 
