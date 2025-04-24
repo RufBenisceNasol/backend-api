@@ -7,7 +7,8 @@ const {
   getProductById,
   updateProduct,
   deleteProduct,
-  deleteAllProductsInStore
+  deleteAllProductsInStore,
+  getSellerProducts
 } = require('../controllers/productController');
 
 const { authenticate, checkRole } = require('../middlewares/authMiddleware');
@@ -23,7 +24,14 @@ const {
 router.get('/', getAllProducts);  // Fetch all products
 router.get('/:id', getProductById);  // Fetch a product by ID
 
-// 🔐 Seller-only routes
+// 🆕 Get all products of the logged-in seller
+router.get(
+  '/seller/products',
+  authenticate,  // Ensure the user is authenticated
+  checkRole('Seller'),  // Ensure the user is a Seller
+  getSellerProducts  // Controller to fetch seller's products
+);
+
 
 // Create a new product
 router.post(

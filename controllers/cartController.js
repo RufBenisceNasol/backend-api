@@ -61,10 +61,6 @@ const removeItemFromCart = async (req, res) => {
       const customerId = req.user._id;
       const { productId } = req.body;
   
-      // 🐛 DEBUG LOGS:
-      console.log('🧾 Customer ID:', customerId);
-      console.log('🛒 Product ID to remove:', productId);
-  
       let cart = await Cart.findOne({ customer: customerId });
   
       // More logging

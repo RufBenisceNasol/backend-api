@@ -4,21 +4,32 @@ const router = express.Router();
 const {
   updateStore,
   deleteStore,
-  getStoreByOwner,
+  // getStoreByOwner,
   getAllStores,
   getStoreById,
   getStoreProducts,
+  getMyStore
+  
 } = require('../controllers/storeController');
 
-const { authenticate } = require('../middlewares/authMiddleware'); // ✅ FIXED
+const { authenticate ,checkRole} = require('../middlewares/authMiddleware'); // ✅ FIXED
 const checkStoreOwnership = require('../utils/checkOwnership');
 const uploadStoreImage = require('../middlewares/uploadStoreMiddleware'); 
 
 // 🔍 Get all stores (with optional search)
 router.get('/', getAllStores);
 
+
 // 👤 Get store by logged-in owner
-router.get('/owner/:ownerId', authenticate, getStoreByOwner);
+router.get(
+  '/my-store',
+  authenticate,
+  checkRole('Seller'),
+  getMyStore
+);
+
+// // 👤 Get store by logged-in owner
+// router.get('/owner/:ownerId', authenticate, getStoreByOwner);
 
 // 📍 Get a specific store by ID (for customers)
 router.get('/:id', getStoreById);

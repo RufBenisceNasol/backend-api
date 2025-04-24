@@ -72,6 +72,18 @@ const getStoreByOwner = async (req, res) => {
   }
 };
 
+const getMyStore = async (req, res) => {
+  try {
+    const store = await Store.findOne({ owner: req.user._id }).populate('products');
+    if (!store) {
+      return res.status(404).json({ message: 'Store not found for this seller' });
+    }
+    res.status(200).json(store);
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to fetch your store', error: error.message });
+  }
+};
+
 // 🔥 NEW: Get all stores (for customers)
 const getAllStores = async (req, res) => {
   try {
@@ -127,5 +139,6 @@ module.exports = {
   getStoreByOwner,
   getAllStores,
   getStoreById, 
-  getStoreProducts
+  getStoreProducts,
+  getMyStore,
 };

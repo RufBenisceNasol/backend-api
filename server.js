@@ -47,6 +47,11 @@ app.use((err, req, res, next) => {
     res.status(500).json({ message: 'Something went wrong!' }); // Send a generic error response
 });
 
+// Test endpoint
+app.get('/api/test-endpoint', (req, res) => {
+    res.json({ message: 'API is working!', status: 'success' });
+  });
+
 // Graceful shutdown
 process.on('SIGINT', async () => {
     console.log('SIGINT received, shutting down gracefully...');
